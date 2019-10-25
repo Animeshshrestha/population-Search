@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block layoutstylesheet %}
+  
+{% endblock layoutstylesheet %}
+
+{% block layout %}
+
+    <section class="section--country">
+        <div class="container">
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#countryModal">Add City</button>
+            </div>
+
+
+            <div class="row">
+                <div class="col-6">
+                    <table class="table-responsive table d-lg-table table-bordered">
+                        <thead>
+                            <th>
+                                    Country
+                            </th>
+                            <th>
+                                City
+                            </th>
+                            <th class="text-right">
+                                Action
+                            </th>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    Malaysia
+                                </td>
+                                <td>Nepal</td>
+                                <td>
+                                    <div class="d-flex justify-content-end">
+                                            <button class="btn btn-sm btn-info mr-2">Edit</button>
+                                            <button class="btn btn-sm btn-danger">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="modal modal--login" tabindex="-1" id="countryModal" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Add City</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form action="">
+
+                    <div class="form-group">
+                        <label for="" class="d-block mb-2">
+                            Country
+                        </label>
+                        <select name="" id="" class="custom--select w-100">
+                            <option value="">Nepali</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="">City</label>
+                      <input type="text" class="form-control">
+                    </div>
+                    
+                      
+                    <button class="btn btn-primary">Save</button>
+                  </form>
+                </div>
+               
+              </div>
+            </div>
+    </div>
+
+{% endblock layout %}
+
+{% block layoutscripts %}
+{% endblock layoutscripts%}

@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block layoutstylesheet %}
+  
+{% endblock layoutstylesheet %}
+
+{% block layout %}
+
+    <section class="section--country">
+        <div class="container">
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#populationModal">Add Population</button>
+            </div>
+
+
+            <div class="row">
+                <div class="col-8">
+                    <div class="form-group">
+                        <label for="" class="text-dark">Select Country:</label>
+                        <select name="" id="" class="custom--select">
+                            <option value="">Nepal</option>
+                        </select>
+                    </div>
+
+                    <table class="table-responsive table d-lg-table table-bordered">
+                        <thead>
+                            <tr>
+                                    <th rowspan="2">
+                                            State
+                                    </th>
+                                    <th rowspan="2">
+                                        Age group
+                                    </th>
+                                    <th colspan="2">
+                                        Population
+                                    </th>
+                                    <th rowspan="2" class="text-center">
+                                        Action
+                                    </th>
+                            </tr>
+                            <tr>
+                                <th>Male</th>
+                                <th>Female</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    State 2
+                                </td>
+                                <td>Old</td>
+                                <td>8920381</td>
+                                <td>8083024</td>
+                                
+                                <td>
+                                    <div class="d-flex justify-content-end">
+                                            <button class="btn btn-sm btn-info mr-2">Edit</button>
+                                            <button class="btn btn-sm btn-danger">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="modal modal--login" tabindex="-1" id="populationModal" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Add City</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form action="">
+
+                    <div class="form-group">
+                        <label for="" class="d-block mb-2">
+                            Country
+                        </label>
+                        <select name="" id="" class="custom--select w-100">
+                            <option value="">Nepali</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                            <label for="" class="d-block mb-2">
+                                City/State
+                            </label>
+                            <select name="" id="" class="custom--select w-100">
+                                <option value="">Nepali</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
+                            <label for="" class="d-block mb-2">
+                                Age Group
+                            </label>
+                            <select name="" id="" class="custom--select w-100">
+                                <option value="">Nepali</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="">Population</label>
+                      <div class="d-flex">
+                          <div class="form-group mr-2">
+                              <label for="" class="d-block small">
+                                  Male
+                              </label>
+                              <input type="text" class="form-control">
+                          </div>
+
+                          <div class="form-group">
+                                <label for="" class="d-block small">
+                                    Female
+                                </label>
+                                <input type="text" class="form-control">
+                            </div>
+                      </div>
+                 
+                    </div>
+                    
+                      
+                    <button class="btn btn-primary">Save</button>
+                  </form>
+                </div>
+               
+              </div>
+            </div>
+    </div>
+
+{% endblock layout %}
+
+{% block layoutscripts %}
+{% endblock layoutscripts%}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block layoutstylesheet %}
+  
+{% endblock layoutstylesheet %}
+
+{% block layout %}
+
+
+<main>
+
+  <section class="section--filter">
+    <div class="container">
+      <div class="row">
+
+        <div class="col-lg-4">
+          <div class="form-group">
+            <label for="country" class="d-block">Country</label>
+            <select name="" id="country" class="custom--select">
+              <option value="">All Country</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="form-group">
+              <label for="states" class="d-block">States</label>
+              <select name="" id="states" class="custom--select">
+                <option value="">All States / Cities</option>
+              </select>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+              <label for="gender" class="d-block">Gender</label>
+              <select name="" id="gender" class="custom--select">
+                <option value="">All Gender</option>
+              </select>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section--chart">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-8">
+
+            </div>
+      
+            <div class="col-lg-4">
+                <h2 class="heading--primary mb-3">Summary Report</h2>
+      
+                <table class="table table-responsive d-lg-table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>S.N</th>
+                      <th>Country Name</th>
+                      <th>Population</th>
+                    </tr>
+                  </thead>
+          
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>China</td>
+                      <td>13128903</td>
+                    </tr>
+          
+                    <tr>
+                        <td>1</td>
+                        <td>China</td>
+                        <td>13128903</td>
+                    </tr>
+          
+                    <tr>
+                        <td>1</td>
+                        <td>China</td>
+                        <td>13128903</td>
+                    </tr>
+          
+                    <tr>
+                        <td>1</td>
+                        <td>China</td>
+                        <td>13128903</td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section--table">
+    <div class="container">
+      
+    </div>
+  </section>
+
+</main>
+{% endblock layout %}
+
+{% block layoutscripts %}
+{% endblock layoutscripts%}
