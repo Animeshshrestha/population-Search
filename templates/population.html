@@ -18,8 +18,8 @@
                 <div class="col-8">
                     <div class="form-group">
                         <label for="" class="text-dark">Select Country:</label>
-                        <select name="" id="" class="custom--select">
-                            <option value="">Nepal</option>
+                        <select name="" id="coutry_population" class="custom--select">
+                            <option selected disabled>Select An Option</option>
                         </select>
                     </div>
 
@@ -85,24 +85,26 @@
                         <label for="" class="d-block mb-2">
                             Country
                         </label>
-                        <select name="" id="" class="custom--select w-100">
-                            <option value="">Nepali</option>
+                        <select name="country" id="countryselect" class="custom--select w-100">
+                            <option selected disabled>Select An Option</option>
                         </select>
                     </div>
                     <div class="form-group">
                             <label for="" class="d-block mb-2">
                                 City/State
                             </label>
-                            <select name="" id="" class="custom--select w-100">
-                                <option value="">Nepali</option>
+                            <select name="city_or_state" id="cityselect" class="custom--select w-100">
+                                 <option selected disabled>Select An Option</option>
                             </select>
                     </div>
                     <div class="form-group">
                             <label for="" class="d-block mb-2">
                                 Age Group
                             </label>
-                            <select name="" id="" class="custom--select w-100">
-                                <option value="">Nepali</option>
+                            <select name="group" id="" class="custom--select w-100">
+                                <option value="ol">Old</option>
+                                <option value="yo">Young</option>
+                                <option value="ch">Child</child>
                             </select>
                     </div>
                     <div class="form-group">
@@ -112,14 +114,14 @@
                               <label for="" class="d-block small">
                                   Male
                               </label>
-                              <input type="text" class="form-control">
+                              <input type="text" class="form-control" name = "no_of_male">
                           </div>
 
                           <div class="form-group">
                                 <label for="" class="d-block small">
                                     Female
                                 </label>
-                                <input type="text" class="form-control">
+                                <input type="text" class="form-control" name = "no_of_female">
                             </div>
                       </div>
                  
@@ -137,4 +139,60 @@
 {% endblock layout %}
 
 {% block layoutscripts %}
+<script>
+    function country_list(ids_value){
+        $.ajax({
+                type:"GET",
+                url:"{% url 'country' %}",
+                data:{'list':'list'},
+                success:function(result){
+                   if(Object.keys(result).length>0){ 
+                    $.each(result, function (i, item) {
+                            $('#'+ids_value).append($('<option>', { 
+                                value: item.id,
+                                text : item.name 
+                            }));
+                        });
+                   }    
+                }
+            })
+    }
+
+    function city_list(country_name,ids_value){
+        console.log(ids_value)
+        $.ajax({
+                type:"GET",
+                url:"{% url 'city' %}",
+                data:{'list':'list','id':country_name},
+                success:function(result){
+                   if(Object.keys(result).length>0){ 
+                    $.each(result, function (i, item) {
+                            $('#'+ids_value).append($('<option>', { 
+                                value: item.name,
+                                text : item.name 
+                            }));
+                        });
+                   } 
+                }
+            })
+    }
+
+    country_list('coutry_population')
+
+    $("#populationModal").on('shown.bs.modal',function(){
+        country_list('countryselect')
+        $("#countryselect").change(function(){
+            $('#cityselect').find('option').not(':first').remove()
+            city_list(this.value,'cityselect')   
+        })
+    })
+
+    $("#populationModal").on('hidden.bs.modal',function(){
+
+      $("#countryselect").find('option').remove()
+
+    })
+
+
+</script>
 {% endblock layoutscripts%}

@@ -25,20 +25,21 @@
                                 Action
                             </th>
                         </thead>
-
+                        {% for country in countrys%}
                         <tbody>
                             <tr>
                                 <td>
-                                    Malaysia
+                                    {{ country.name }}
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-end">
-                                            <button class="btn btn-sm btn-info mr-2">Edit</button>
-                                            <button class="btn btn-sm btn-danger">Delete</button>
+                                            <button class="btn btn-sm btn-info mr-2" id='{{ country.id }}'>Edit</button>
+                                            <button class="btn btn-sm btn-danger delete-button" id='{{ country.id }}'>Delete</button>
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
+                        {% endfor %}
                     </table>
                 </div>
             </div>
@@ -56,14 +57,43 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                  <form action="">
+                  <form action="{% url 'country-edit' %}" method="POST">
+                  {% csrf_token %}
                     <div class="form-group">
                       <label for="">Name of Country</label>
-                      <input type="text" class="form-control">
+                      <input type="text" class="form-control" name="name" id="country_name">
                     </div>
                     
                       
-                    <button class="btn btn-primary">Save</button>
+                    <button class="btn btn-primary" id="createcountry">Save</button>
+                  </form>
+                </div>
+               
+              </div>
+            </div>
+    </div>
+
+    <div class="modal modal--login" tabindex="-1" id="CountryEditModal" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Edit Country</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form action="{% url 'country-edit' %}" method="POST">
+                  {% csrf_token %}
+
+                  <input type="hidden" name = "country_id" id="country-id" >
+                    <div class="form-group">
+                      <label for="">Name of Country</label>
+                      <input type="text" class="form-control" name="name" id="edit_country">
+                    </div>
+                    
+                      
+                    <button class="btn btn-primary" id="edit-country">Save</button>
                   </form>
                 </div>
                
@@ -74,4 +104,85 @@
 {% endblock layout %}
 
 {% block layoutscripts %}
+<script>
+    $("#createcountry").on('click',function(event){
+        event.preventDefault()
+        $("#createcountry").attr("disabled",true)
+        var name = $("#country_name").val()
+        $.ajax({
+          type:"POST",
+          url:"{% url 'country-edit' %}",
+          data:{'name':name,csrfmiddlewaretoken: '{{ csrf_token }}'},
+          success:function(result){
+            if (result.status == "True"){
+              alert(result.message)
+              window.location.reload()
+            }else {
+              $("#createcountry").attr("disabled",false)
+              var responses = jQuery.parseJSON(result.errors)
+              alert(responses.name[0].message)
+            }
+          }
+        })
+    })
+
+    $(".mr-2").on('click',function(){
+
+      $("#country-id").val(this.id)
+      $.ajax({
+          type:"GET",
+          url:"{% url 'country-edit' %}",
+          data:{'id':this.id},
+          success:function(result){
+            $("#edit_country").val(result.name)
+            $("#CountryEditModal").modal('show')
+          }
+      })
+    })
+
+     $("#edit-country").on('click',function(event){
+        event.preventDefault()
+        $("#edit-country").attr("disabled",true)
+        var name = $("#edit_country").val()
+        var method = 'EDIT'
+        $.ajax({
+          type:"POST",
+          url:"{% url 'country-edit' %}",
+          data:{'name':name,
+                'method':method,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'country_id':$("#country-id").val()},
+          success:function(result){
+            if (result.status == "True"){
+              alert(result.message)
+              window.location.reload()
+            }else {
+              $("#edit-country").attr("disabled",false)
+              var responses = jQuery.parseJSON(result.errors)
+              alert(responses.name[0].message)
+            }
+          }
+        })
+    })
+
+    $(".delete-button").on('click',function(event){
+
+      var method = "DELETE"
+      var delete_country = confirm("Are you sure you want to delete this country and all of it's details?");
+      if (delete_country){
+        $.ajax({
+            type:"POST",
+            url:"{% url 'country-edit' %}",
+            data:{'id':this.id,
+                  'method':method,
+                  csrfmiddlewaretoken: '{{ csrf_token }}'},
+            success:function(result){
+              alert("Country has been deleted");
+              location.reload();
+            }
+        })
+      }
+    })
+
+</script>
 {% endblock layoutscripts%}

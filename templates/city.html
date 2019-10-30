@@ -10,7 +10,7 @@
     <section class="section--country">
         <div class="container">
             <div class="d-flex justify-content-end">
-                <button class="btn btn-primary" data-toggle="modal" data-target="#countryModal">Add City</button>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#cityModal">Add City</button>
             </div>
 
 
@@ -28,21 +28,22 @@
                                 Action
                             </th>
                         </thead>
-
+                        {% for city_lists in city_list %}
                         <tbody>
                             <tr>
                                 <td>
-                                    Malaysia
+                                   {{ city_lists.country }} 
                                 </td>
-                                <td>Nepal</td>
+                                <td>{{ city_lists.city_or_state }}</td>
                                 <td>
                                     <div class="d-flex justify-content-end">
-                                            <button class="btn btn-sm btn-info mr-2">Edit</button>
-                                            <button class="btn btn-sm btn-danger">Delete</button>
+                                            <button class="btn btn-sm btn-info mr-2" id="{{ city_lists.id }}" >Edit</button>
+                                            <button class="btn btn-sm btn-danger delete-button" id="{{ city_lists.id }}">Delete</button>
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
+                        {% endfor %}
                     </table>
                 </div>
             </div>
@@ -50,7 +51,7 @@
     </section>
 
 
-    <div class="modal modal--login" tabindex="-1" id="countryModal" role="dialog">
+    <div class="modal modal--login" tabindex="-1" id="cityModal" role="dialog">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
                 <div class="modal-header">
@@ -60,23 +61,23 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                  <form action="">
-
+                  <form action="{% url 'city-edit' %}" method="POST">
+                         {% csrf_token %}
                     <div class="form-group">
                         <label for="" class="d-block mb-2">
                             Country
                         </label>
-                        <select name="" id="" class="custom--select w-100">
-                            <option value="">Nepali</option>
+                        <select name="country" id="mySelect" class="custom--select w-100">
+                            <option selected disabled>Select An Option</option>
                         </select>
                     </div>
                     <div class="form-group">
                       <label for="">City</label>
-                      <input type="text" class="form-control">
+                      <input type="text" class="form-control" name="city_or_state" id="citystate">
                     </div>
                     
                       
-                    <button class="btn btn-primary">Save</button>
+                    <button class="btn btn-primary" id="city-create">Save</button>
                   </form>
                 </div>
                
@@ -84,7 +85,163 @@
             </div>
     </div>
 
+ <div class="modal modal--login" tabindex="-1" id="cityEditModal" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Edit City</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form action="{% url 'city-edit' %}" method="POST">
+                         {% csrf_token %}
+                    <input type="hidden" name = "city_id" id="city-id" >
+                    <div class="form-group">
+                        <label for="" class="d-block mb-2">
+                            Country
+                        </label>
+                        <select name="country" id="editSelect" class="custom--select w-100">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="">City</label>
+                      <input type="text" class="form-control" name="city_or_state" id="editcitystate">
+                    </div>
+                    
+                      
+                    <button class="btn btn-primary" id="city-edit">Save</button>
+                  </form>
+                </div>
+               
+              </div>
+            </div>
+    </div>
+
+
 {% endblock layout %}
 
 {% block layoutscripts %}
+    <script>
+    function country_list(ids_value){
+        $.ajax({
+                type:"GET",
+                url:"{% url 'country' %}",
+                data:{'list':'list'},
+                success:function(result){
+                   if(Object.keys(result).length>0){ 
+                    $.each(result, function (i, item) {
+                            $('#'+ids_value).append($('<option>', { 
+                                value: item.id,
+                                text : item.name 
+                            }));
+                        });
+                   }    
+                }
+            })
+    }
+        $("#cityModal").on('shown.bs.modal',function(){
+             country_list('mySelect')
+        })
+
+        $("#city-create").on('click',function(event){
+        event.preventDefault()
+        $("#createcountry").attr("disabled",true)
+        var country = $("#mySelect").val()
+        var city_or_state = $("#citystate").val()
+        $.ajax({
+          type:"POST",
+          url:"{% url 'city-edit' %}",
+          data:{'country':country,
+                'city_or_state':city_or_state,
+                csrfmiddlewaretoken: '{{ csrf_token }}'},
+          success:function(result){
+            if (result.status == "True"){
+              alert(result.message)
+              window.location.reload()
+            }else {
+              $("#createcountry").attr("disabled",false)
+              var responses = jQuery.parseJSON(result.errors)
+              alert(responses.city_or_state[0].message)
+            }
+          }
+        })
+    })
+
+    $(".delete-button").on('click',function(event){
+
+      var method = "DELETE"
+      var delete_city = confirm("Are you sure you want to delete this city and all of it's details?");
+      if (delete_city){
+        $.ajax({
+            type:"POST",
+            url:"{% url 'city-edit' %}",
+            data:{'id':this.id,
+                  'method':method,
+                  csrfmiddlewaretoken: '{{ csrf_token }}'},
+            success:function(result){
+              alert("City has been deleted");
+              location.reload();
+            }
+        })
+      }
+    })
+
+    $(".mr-2").on('click',function(){
+
+      $("#city-id").val(this.id)
+      $.ajax({
+          type:"GET",
+          url:"{% url 'city-edit' %}",
+          data:{'id':this.id},
+          success:function(result){
+            
+            $("#editcitystate").val(result.city_or_state)
+            country_list('editSelect')
+            $("#editSelect").val(result.country_id)
+            $("#cityEditModal").modal('show')
+          }
+      })
+    })
+
+    $("#city-edit").on('click',function(event){
+        event.preventDefault()
+        $("#city-edit").attr("disabled",true)
+        var country = $("#editSelect").val()
+        var city_or_state = $("#editcitystate").val()
+        var method = 'EDIT'
+        $.ajax({
+          type:"POST",
+          url:"{% url 'city-edit' %}",
+          data:{'country':country,
+                'city_or_state':city_or_state,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'method':method,
+                'city-id':$("#city-id").val()},
+          success:function(result){
+            if (result.status == "True"){
+              alert(result.message)
+              window.location.reload()
+            }else {
+              $("#city-edit").attr("disabled",false)
+              var responses = jQuery.parseJSON(result.errors)
+              alert(responses.city_or_state[0].message)
+            }
+          }
+        })
+    })
+
+    $("#cityModal").on('hidden.bs.modal',function(){
+
+      $("#mySelect").find('option').not(':first').remove()
+
+    })
+
+    $("#cityEditModal").on('hidden.bs.modal',function(){
+
+      $("#editSelect").find('option').remove()
+
+    })
+    </script>
 {% endblock layoutscripts%}
