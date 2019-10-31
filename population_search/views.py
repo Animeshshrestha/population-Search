@@ -1,4 +1,6 @@
 import json, pdb
+
+from django.db.models import Sum, Avg, Count, F, Q, When
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
@@ -235,6 +237,58 @@ class PopulationEdit(View):
 			print("form was not valid")
 			data = {"status":"False","error":form.errors.as_json()}
 			return JsonResponse(data,safe=False)
+
+def max_three_population(request):
+	if request.method == "GET":
+		total = list(PopulationSearch.objects.values(
+				'country__name').\
+				order_by('-total').\
+				annotate(
+					total=Sum(F('no_of_male')+F('no_of_female'))
+				)[:3]
+			)
+	
+		return JsonResponse(total, safe=False)
+
+def all_countries_population(request):
+
+	if request.method == "GET":
+
+		country = request.GET.get('country','All')
+		state = request.GET.get('state','All')
+		gender = request.GET.get('gender','All')
+		print(gender)
+		filters = {}
+		sum = F('no_of_male')+F('no_of_female')
+		if country !='All':
+			filters['country__name']=country
+		if state !='All':
+			filters['city_or_state__city_or_state']=state
+		if gender == 'male':
+			sum = F('no_of_male')
+		if gender == 'female':
+			sum = F('no_of_female')
+		print(filters, sum)
+
+
+		old = PopulationSearch.objects.filter(**filters,group='ol').aggregate(old=Sum(sum))
+		young = PopulationSearch.objects.filter(**filters,group='yo').aggregate(young=Sum(sum))
+		child = PopulationSearch.objects.filter(**filters,group='ch').aggregate(child=Sum(sum))
+		data = [old,young,child]
+		return JsonResponse(data, safe=False)
+
+class PopulationDetails(View):
+
+	template_name = 'populationdetails.html'
+
+	def get(self,request):
+
+		list_of_countrys = Country.objects.all().values('name','id')
+		
+		context_dict = {
+			'countrys':list_of_countrys
+		}
+		return render(request, self.template_name, context_dict)
 
 
 		

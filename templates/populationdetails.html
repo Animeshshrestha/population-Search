@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block layoutstylesheet %}
+  
+{% endblock layoutstylesheet %}
+
+{% block layout %}
+
+
+<main>
+
+  <section class="section--filter">
+    <div class="container">
+      <div class="row">
+
+        <div class="col-lg-3">
+          <div class="form-group">
+            <label for="country" class="d-block">Country</label>
+            <select name="" id="country" class="custom--select">
+              <option value="All">All Country</option>
+              {% for country in countrys %}
+                <option value="{{ country.name }}"> {{ country.name }} </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="form-group">
+              <label for="states" class="d-block">States</label>
+              <select name="" id="states" class="custom--select">
+                <option value="All">All States / Cities</option>
+              </select>
+            </div>
+        </div>
+       
+        <div class="col-lg-3">
+            <div class="form-group">
+              <label for="gender" class="d-block">Gender</label>
+              <select name="" id="gender" class="custom--select">
+                <option value="All">All Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+        </div>
+
+         <div class="col-lg-3">
+            <div class="form-group">
+              <button type="button" id="view-data" class="btn btn-primary">View Data</button>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section--chart">
+    <div class="container">
+      <div class="row">
+          <div class="col-lg-8">
+
+            </div>
+      
+            <div class="col-lg-4">
+                <h2 class="heading--primary mb-3">Summary Report</h2>
+      
+                <table class="table table-responsive d-lg-table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>S.N</th>
+                      <th>Country Name</th>
+                      <th>Population</th>
+                    </tr>
+                  </thead>
+          
+                  <tbody id="max-population">
+                    
+                  </tbody>
+                </table>
+            </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section--table">
+    <div class="container">
+    <p id="old">old</p>
+    <p id="young">old</p>
+    <p id="child">old</p>
+      
+    </div>
+  </section>
+
+</main>
+
+{% endblock layout %}
+
+{% block layoutscripts %}
+  <script>
+  $(function() {
+    $.ajax({
+      type:"GET",
+      url: "{% url 'max-population' %}",
+      success:function(result){
+        populate_row(result)
+      }
+    })
+
+  all_countries()
+    
+  });
+
+  function all_countries(data){
+
+    $.ajax({
+      type:"GET",
+      data:data,
+      url: "{% url 'all-population' %}",
+      success:function(result){
+        console.log(result)
+      }
+    })
+
+  }
+
+  function populate_row(data){
+    data.map((item,i)=>{
+            
+            let temp = ` <tr>
+                            <td>${i+1}</td>
+                            <td>${item.country__name}</td>
+                            <td>${item.total}</td>
+                            </tr>`    
+
+            $('#max-population').append(temp)                
+
+        
+        })
+  }
+  
+
+  $("#view-data").on('click', function(){
+    var country = $("#country").val()
+    var state = $("#states").val()
+    var gender = $("#gender").val()
+
+    if (country == "All" && gender == "All"){
+      all_countries()
+    }else{
+      $.ajax({
+      type:"GET",
+      data:{
+        'country':country,
+        'state':state,
+        'gender':gender
+      },
+      url: "{% url 'all-population' %}",
+      success:function(result){
+        console.log(result)
+      }
+    })
+
+    }
+  })
+
+
+  </script>
+{% endblock layoutscripts%}
