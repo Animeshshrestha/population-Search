@@ -1,6 +1,7 @@
 from django import forms
+from django.core.exceptions import NON_FIELD_ERRORS
 
-from .models  import CityOrState, Country
+from .models  import CityOrState, Country, PopulationSearch
 
 class CountryForm(forms.ModelForm):
 
@@ -20,19 +21,13 @@ class CityOrStateForm(forms.ModelForm):
 
     class Meta:
         model = CityOrState
-        fields = ('city_or_state','country',)
+        fields = ('city_or_state',)
 
-    def __init__(self,country, *args, **kwargs):
-        super(CityOrStateForm, self).__init__(*args, **kwargs)
-        self.fields['country'].queryset = Country.objects.filter(name=country)
-    
-    def clean(self):
 
-        cleaned_data = super(CityOrStateForm,self).clean()
-        print(cleaned_data)
-        country = Country.objects.get(name=cleaned_data['country'])
-        city = cleaned_data['city_or_state']
-        if CityOrState.objects.filter(country=country,city_or_state__iexact=city).exists():
-            self.add_error('city_or_state',"Country with that City Name already exists")
-        return cleaned_data
+class PopulationSearchForm(forms.ModelForm):
+
+    class Meta:
+        model = PopulationSearch
+        fields = ('group', 'city_or_state', 'no_of_male', 'no_of_female')
+
         
