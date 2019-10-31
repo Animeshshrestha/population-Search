@@ -182,7 +182,7 @@
     $("#populationModal").on('shown.bs.modal',function(){
         country_list('countryselect')
         $("#countryselect").change(function(){
-            $('#cityselect').find('option').not(':first').remove()
+            $('#cityselect').find('option').remove()
             city_list(this.value,'cityselect')   
         })
     })
