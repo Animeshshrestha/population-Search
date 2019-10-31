@@ -70,7 +70,11 @@ class PopulationSearch(TimeStampedUUID):
 	country = models.ForeignKey(Country,
 				on_delete=models.CASCADE,
 				related_name='country_population')
-	city_or_state = models.CharField(max_length=255)
+
+	city_or_state = models.ForeignKey(CityOrState,
+				on_delete=models.CASCADE,
+				related_name='country_cityorstate')
+
 	no_of_male = models.PositiveIntegerField()
 	no_of_female = models.PositiveIntegerField()
 

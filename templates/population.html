@@ -218,7 +218,7 @@
     }
 
     function city_list(country_name,ids_value){
-        console.log(country_name)
+        
         $.ajax({
                 type:"GET",
                 url:"{% url 'city' %}",
@@ -227,7 +227,7 @@
                    if(Object.keys(result).length>0){ 
                     $.each(result, function (i, item) {
                             $('#'+ids_value).append($('<option>', { 
-                                value: item.name,
+                                value: item.id,
                                 text : item.name 
                             }));
                         });
@@ -423,6 +423,7 @@
           url:"{% url 'population-edit' %}",
           data:{'id':this.id},
           success:function(result){
+            console.log(result)
             $("#edit_no_of_male").val(result.no_of_male)
             $("#edit_no_of_female").val(result.no_of_female)
             $("#age-edit-group").val(result.group)

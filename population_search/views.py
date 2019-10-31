@@ -1,4 +1,4 @@
-import json
+import json, pdb
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
@@ -97,7 +97,8 @@ class CityListView(View):
 			data = []
 			for city in city_state:
 				data.append({
-					'name': city.city_or_state
+					'name': city.city_or_state,
+					'id':city.id
 				})
 			print("for country",data)
 			return 	JsonResponse(data,safe=False)
@@ -129,9 +130,10 @@ class CityEditView(View):
 			CityOrState.objects.get(id=request.POST['id']).delete()
 			data = {"status":"True"}
 			return JsonResponse(data,safe=False)
-		print(request.POST)
+		
 		country = Country.objects.get(id=request.POST['country'])
-
+		
+		# pdb.set_trace()
 		try:
 			city = CityOrState.objects.get(id=request.POST['city-id'])
 			form = self.form_class(request.POST, instance=city)
@@ -169,7 +171,7 @@ class PopulationList(View):
 			for population in population_detail:
 				data.append({
 					'id':population.id,
-					'state':population.city_or_state,
+					'state':population.city_or_state.city_or_state,
 					'male':population.no_of_male,
 					'female':population.no_of_female,
 					'age_group':population.get_group_display()
@@ -190,7 +192,7 @@ class PopulationEdit(View):
 			population = PopulationSearch.objects.get(id=population_id)
 			context_dict = {
 				'country_id':population.country.id,
-				'city_or_state':population.city_or_state,
+				'city_or_state':population.city_or_state.id,
 				'group':population.group,
 				'no_of_male':population.no_of_male,
 				'no_of_female':population.no_of_female
@@ -207,7 +209,9 @@ class PopulationEdit(View):
 			return JsonResponse(data,safe=False)
 
 		country = Country.objects.get(id=request.POST['country'])
-		print(request.POST)
+		city = CityOrState.objects.get(id=request.POST['city_or_state'])
+		print(city)
+		print('data are',request.POST)
 		try:
 			population = PopulationSearch.objects.get(id=request.POST['id'])
 			form = self.form_class(request.POST,instance=population)
@@ -219,10 +223,12 @@ class PopulationEdit(View):
 			try:
 				data = form.save(commit=False)
 				data.country = country
+				data.city_or_state=city
 				data.save()
 				data = {"status":"True",'message':"Population Added Sucessfully"}
 				return JsonResponse(data,safe=False)
 			except Exception as e:
+				print(e)
 				data = {"status":"False","errors":e.message_dict}
 				return JsonResponse(data,safe=False)
 		else:

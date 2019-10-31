@@ -28,6 +28,6 @@ class PopulationSearchForm(forms.ModelForm):
 
     class Meta:
         model = PopulationSearch
-        fields = ('group', 'city_or_state', 'no_of_male', 'no_of_female')
+        fields = ('group', 'no_of_male', 'no_of_female')
 
         
