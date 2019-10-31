@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+<title>{% block title %}City Page{% endblock title %}</title>
 {% load static %}
 
 {% block layoutstylesheet %}
@@ -103,6 +104,7 @@
                             Country
                         </label>
                         <select name="country" id="editSelect" class="custom--select w-100">
+                            <option selected disabled>Select An Option</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -135,6 +137,7 @@
                             $('#'+ids_value).append($('<option>', { 
                                 value: item.id,
                                 text : item.name 
+                            
                             }));
                         });
                    }    
@@ -162,8 +165,13 @@
               window.location.reload()
             }else {
               $("#createcountry").attr("disabled",false)
-              var responses = jQuery.parseJSON(result.errors)
-              alert(responses.city_or_state[0].message)
+              if(result.errors){
+              var responses = result.errors.__all__[0]
+              alert(responses)
+              }else{
+                  alert("Please Check console of browser for errors")
+                  console.log(result.error)
+              }
             }
           }
         })
@@ -189,17 +197,18 @@
     })
 
     $(".mr-2").on('click',function(){
-
+      
       $("#city-id").val(this.id)
+      country_list('editSelect');
       $.ajax({
           type:"GET",
           url:"{% url 'city-edit' %}",
           data:{'id':this.id},
           success:function(result){
-            
+            console.log(result)  
             $("#editcitystate").val(result.city_or_state)
-            country_list('editSelect')
-            $("#editSelect").val(result.country_id)
+            $("#editSelect").val(result.country_id).trigger('change');
+            
             $("#cityEditModal").modal('show')
           }
       })
@@ -225,21 +234,26 @@
               window.location.reload()
             }else {
               $("#city-edit").attr("disabled",false)
-              var responses = jQuery.parseJSON(result.errors)
-              alert(responses.city_or_state[0].message)
+              if(result.errors){
+              var responses = result.errors.__all__[0]
+              alert(responses)
+              }else{
+                  alert("Please Check console of browser for errors")
+                  console.log(result.error)
+              }
             }
           }
         })
     })
 
     $("#cityModal").on('hidden.bs.modal',function(){
-
+      $(this).find('form')[0].reset();  
       $("#mySelect").find('option').not(':first').remove()
 
     })
 
     $("#cityEditModal").on('hidden.bs.modal',function(){
-
+      $(this).find('form')[0].reset();  
       $("#editSelect").find('option').remove()
 
     })

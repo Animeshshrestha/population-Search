@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+<title>{% block title %}Country Page{% endblock title %}</title>
 {% load static %}
 
 {% block layoutstylesheet %}
@@ -142,6 +143,7 @@
 
      $("#edit-country").on('click',function(event){
         event.preventDefault()
+        
         $("#edit-country").attr("disabled",true)
         var name = $("#edit_country").val()
         var method = 'EDIT'
@@ -182,6 +184,10 @@
             }
         })
       }
+    })
+
+    $("#countryModal").on('hidden.bs.modal', function(){
+      $(this).find('form')[0].reset();
     })
 
 </script>

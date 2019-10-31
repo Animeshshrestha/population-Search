@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.core.exceptions import NON_FIELD_ERRORS
 
 class TimeStampedUUID(models.Model):
 
@@ -40,6 +41,10 @@ class CityOrState(TimeStampedUUID):
 			models.UniqueConstraint(fields=['country','city_or_state'],
 				 name='unique_country_state')
 		]
+	
+	def save(self, *args,**kwargs):
+		self.validate_unique()
+		super(CityOrState,self).save(*args, **kwargs) 
 
 	def __str__(self):
 
@@ -65,13 +70,28 @@ class PopulationSearch(TimeStampedUUID):
 	country = models.ForeignKey(Country,
 				on_delete=models.CASCADE,
 				related_name='country_population')
-	city_or_state = models.CharField(max_length=255)
+
+	city_or_state = models.ForeignKey(CityOrState,
+				on_delete=models.CASCADE,
+				related_name='country_cityorstate')
+
 	no_of_male = models.PositiveIntegerField()
 	no_of_female = models.PositiveIntegerField()
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(fields=['group','country','city_or_state'],
+				 name='unique_group_age_state')
+		]
+	
 
 	def __str__(self):
 
 		return ('{} , {}'.format(self.country,self.group))
+
+	def save(self, *args,**kwargs):
+		self.validate_unique()
+		super(PopulationSearch,self).save(*args, **kwargs) 
 
 
 

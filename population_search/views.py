@@ -1,9 +1,11 @@
+import json, pdb
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
+from django.db import IntegrityError
 
 from .models import Country, CityOrState, PopulationSearch
-from .forms import CountryForm, CityOrStateForm
+from .forms import CountryForm, CityOrStateForm, PopulationSearchForm
 
 # from pusher import Pusher
 
@@ -17,7 +19,7 @@ from .forms import CountryForm, CityOrStateForm
 def hello(request):
 	# pusher.trigger(u'a_channel', u'an_event', {u'message': 'hello world'})
 
-	return render(request,'population.html')
+	return render(request,'sample.html')
 
 class CountryListView(View):
 
@@ -95,7 +97,8 @@ class CityListView(View):
 			data = []
 			for city in city_state:
 				data.append({
-					'name': city.city_or_state
+					'name': city.city_or_state,
+					'id':city.id
 				})
 			print("for country",data)
 			return 	JsonResponse(data,safe=False)
@@ -116,7 +119,7 @@ class CityEditView(View):
 			city_id = request.GET['id']
 			city_or_state = CityOrState.objects.get(id=city_id)
 			context_dict = {
-				'country_id':city_or_state.id,
+				'country_id':city_or_state.country_id,
 				'city_or_state':city_or_state.city_or_state
 			}
 			return JsonResponse(context_dict,safe=False)
@@ -127,25 +130,32 @@ class CityEditView(View):
 			CityOrState.objects.get(id=request.POST['id']).delete()
 			data = {"status":"True"}
 			return JsonResponse(data,safe=False)
-
+		
 		country = Country.objects.get(id=request.POST['country'])
-
-		if request.POST.get('method') == 'EDIT':
-			form = self.form_class(country,request.POST, instance=country)
+		
+		# pdb.set_trace()
+		try:
+			city = CityOrState.objects.get(id=request.POST['city-id'])
+			form = self.form_class(request.POST, instance=city)
 			
-		else:
-			form = self.form_class(country,request.POST)
+		except:
+			form = self.form_class(request.POST)
 
 		if form.is_valid():
-			data = form.save(commit=False)
-			data.country = country
-			data.save()
-			data = {"status":"True",'message':"City Added Sucessfully"}
-			return JsonResponse(data,safe=False)
+			try:
+				data = form.save(commit=False)
+				data.country = country
+				data.save()
+				data = {"status":"True",'message':"City Added Sucessfully"}
+				return JsonResponse(data,safe=False)
+			except Exception as e:
+				print(e)
+				data = {"status":"False","errors":e.message_dict}
+				return JsonResponse(data,safe=False)
 
 		else:
 			
-			data = {"status":"False","errors":form.errors.as_json()}
+			data = {"status":"False","error":form.errors.as_json()}
 			return JsonResponse(data,safe=False)
 
 class PopulationList(View):
@@ -154,7 +164,80 @@ class PopulationList(View):
 
 	def get(self,request):
 
+		if 'id' in request.GET:
+			country_id = request.GET['id']
+			population_detail = PopulationSearch.objects.filter(country__id=country_id)
+			data = []
+			for population in population_detail:
+				data.append({
+					'id':population.id,
+					'state':population.city_or_state.city_or_state,
+					'male':population.no_of_male,
+					'female':population.no_of_female,
+					'age_group':population.get_group_display()
+				})
+			print(data)
+			return JsonResponse(data,safe=False)
+
 		return render(request,self.template_name)
+
+class PopulationEdit(View):
+
+	form_class = PopulationSearchForm
+
+	def get(self,request):
+
+		if 'id' in request.GET:
+			population_id = request.GET['id']
+			population = PopulationSearch.objects.get(id=population_id)
+			context_dict = {
+				'country_id':population.country.id,
+				'city_or_state':population.city_or_state.id,
+				'group':population.group,
+				'no_of_male':population.no_of_male,
+				'no_of_female':population.no_of_female
+			}
+			print(context_dict)
+			return JsonResponse(context_dict,safe=False)
+
+
+	def post(self,request):
+
+		if request.POST.get('method') == 'DELETE':
+			PopulationSearch.objects.get(id=request.POST['id']).delete()
+			data = {"status":"True"}
+			return JsonResponse(data,safe=False)
+
+		country = Country.objects.get(id=request.POST['country'])
+		city = CityOrState.objects.get(id=request.POST['city_or_state'])
+		print(city)
+		print('data are',request.POST)
+		try:
+			population = PopulationSearch.objects.get(id=request.POST['id'])
+			form = self.form_class(request.POST,instance=population)
+			print(" I am editing")
+		except:
+			form = self.form_class(request.POST)
+			print(" I am here")
+		if form.is_valid():
+			try:
+				data = form.save(commit=False)
+				data.country = country
+				data.city_or_state=city
+				data.save()
+				data = {"status":"True",'message':"Population Added Sucessfully"}
+				return JsonResponse(data,safe=False)
+			except Exception as e:
+				print(e)
+				data = {"status":"False","errors":e.message_dict}
+				return JsonResponse(data,safe=False)
+		else:
+			print("form was not valid")
+			data = {"status":"False","error":form.errors.as_json()}
+			return JsonResponse(data,safe=False)
+
+
+		
 
 
 
