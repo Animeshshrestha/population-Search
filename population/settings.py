@@ -25,9 +25,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #third party packages
-    'rest_framework',
-
     #app_list
     'population_search'
 ]
@@ -116,3 +113,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join( BASE_DIR, 'static'),]
+
+PUSHER_APP_ID = '814492'
+PUSHER_KEY = '103ebaaa5395c0e58d67'
+PUSHER_SECRET = '4eb627ea6d3ec2136429'
+PUHSER_CLUSTER = 'ap2'

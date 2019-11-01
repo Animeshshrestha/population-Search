@@ -4,6 +4,9 @@ from django.db import models
 from django.core.exceptions import NON_FIELD_ERRORS
 
 class TimeStampedUUID(models.Model):
+	"""
+	Abstract Model 
+	"""
 
 	id = models.UUIDField(
 		primary_key=True,
@@ -17,6 +20,10 @@ class TimeStampedUUID(models.Model):
 		abstract = True
 
 class Country(TimeStampedUUID):
+	"""
+	Model that inherits the TimeStampedUUID Model
+	Model for adding the Country
+	"""
 
 	name = models.CharField(
 		max_length=255,
@@ -28,6 +35,11 @@ class Country(TimeStampedUUID):
 		return self.name
 
 class CityOrState(TimeStampedUUID):
+	"""
+	Model that inherits the TimeStampedUUID Model
+	Model for adding the CityorState for specific 
+	country
+	"""
 
 	country = models.ForeignKey(
 				Country,
@@ -43,6 +55,10 @@ class CityOrState(TimeStampedUUID):
 		]
 	
 	def save(self, *args,**kwargs):
+		"""
+		This save method is used to check that 
+		the unique validation is not violated.
+		"""
 		self.validate_unique()
 		super(CityOrState,self).save(*args, **kwargs) 
 
@@ -51,6 +67,12 @@ class CityOrState(TimeStampedUUID):
 		return ('{} , {}'.format(self.country.name,self.city_or_state))
 
 class PopulationSearch(TimeStampedUUID):
+	"""
+	Model that inherits the TimeStampedUUID Model
+	Model for adding the Population for specific 
+	country and city/state of specific age group
+	for male and female
+	"""
 
 	GROUP_OLD='ol'
 	GROUP_YOUNG = 'yo'
@@ -84,14 +106,16 @@ class PopulationSearch(TimeStampedUUID):
 				 name='unique_group_age_state')
 		]
 	
+	def save(self, *args,**kwargs):
+		"""
+		This save method is used to check that 
+		the unique validation is not violated.
+		"""
+		self.validate_unique()
+		super(PopulationSearch,self).save(*args, **kwargs) 
 
 	def __str__(self):
 
 		return ('{} , {}'.format(self.country,self.group))
-
-	def save(self, *args,**kwargs):
-		self.validate_unique()
-		super(PopulationSearch,self).save(*args, **kwargs) 
-
 
 

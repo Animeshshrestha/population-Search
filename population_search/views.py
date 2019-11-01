@@ -1,34 +1,100 @@
 import json, pdb
 
 from django.db.models import Sum, Avg, Count, F, Q, When
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
 from django.db import IntegrityError
+from django.conf import settings
+
+from pusher import Pusher
 
 from .models import Country, CityOrState, PopulationSearch
 from .forms import CountryForm, CityOrStateForm, PopulationSearchForm
 
-# from pusher import Pusher
 
-# pusher = Pusher(
-#     app_id='814492',
-#     key='103ebaaa5395c0e58d67',
-#     secret='4eb627ea6d3ec2136429',
-#     cluster='ap2',
-#     ssl=True)
+pusher = Pusher(
+    app_id=settings.PUSHER_APP_ID,
+    key=settings.PUSHER_KEY,
+    secret=settings.PUSHER_SECRET,
+    cluster=settings.PUHSER_CLUSTER,
+    ssl=True)
 
 def hello(request):
-	# pusher.trigger(u'a_channel', u'an_event', {u'message': 'hello world'})
+	"""
+	This function is just for login only. It does not work.
 
-	return render(request,'sample.html')
+	"""
+
+	return render(request,'login.html')
+
+def logout_view(request):
+	"""
+		Logout view that log outs the session of logged in user
+	"""
+
+	logout(request)
+	return redirect('population-details')
+
+def population_max():
+	"""
+		This function returns the top 3 max population from the available country
+	"""
+	total = list(PopulationSearch.objects.values(
+				'country__name').\
+				order_by('-total').\
+				annotate(
+					total=Sum(F('no_of_male')+F('no_of_female'))
+				)[:3]
+			)
+	return total
+
+
+def max_three_population(request):
+	"""
+		Function that calls the population_max() function and returns
+		the data when the home page is loaded at first to display the
+		max three population
+	"""
+	if request.method == "GET":
+		total = population_max()
+	
+		return JsonResponse(total, safe=False)
+
+class AdminAuthentication(View):
+	"""
+		View for authenticating the admin user
+	"""
+
+	template_name = 'login.html'
+
+	def get(self,request):
+
+		return render(request,self.template_name)
+	
+	def post(self,request):
+
+		user_name = request.POST.get('username')
+		password = request.POST.get('password')
+		user = authenticate(username=user_name, password=password)
+
+		if user is not None:
+			login(request,user)
+			response = {'status':200}
+			return JsonResponse(response,safe=False)
+		else:
+			response = {'status':500}
+			return JsonResponse(response, safe=False)
 
 class CountryListView(View):
+	"""
+	View that returns the list of countries
+	"""
 
 	template_name = 'country.html'
 
 	def get(self,request):
-
 
 		list_of_countrys = Country.objects.all().values('name','id')
 		context_dict = {
@@ -48,6 +114,10 @@ class CountryListView(View):
 
 
 class CountryEditView(View):
+	"""
+		View that allows us to perform the CRUD operation
+		on Country.
+	"""
 
 	form_class = CountryForm
 	
@@ -71,6 +141,7 @@ class CountryEditView(View):
 
 		if request.POST.get('method') == 'EDIT':
 			country = Country.objects.get(id=request.POST['country_id'])
+
 		try:
 			form = self.form_class(request.POST, instance=country)
 		except:
@@ -86,6 +157,9 @@ class CountryEditView(View):
 			return JsonResponse(data,safe=False)
 
 class CityListView(View):
+	"""
+	View that returns the list of city according to the countries
+	"""
 
 	template_name = 'city.html'
 
@@ -94,7 +168,12 @@ class CityListView(View):
 		city_lists = CityOrState.objects.all()
 
 		if 'list' in request.GET:
-			country = Country.objects.get(id=request.GET['id'])
+			
+			try:
+				country = Country.objects.get(id=request.GET['id'])
+			except:
+				country = Country.objects.get(name=request.GET['country'])
+
 			city_state  = CityOrState.objects.filter(country = country)
 			data = []
 			for city in city_state:
@@ -102,7 +181,6 @@ class CityListView(View):
 					'name': city.city_or_state,
 					'id':city.id
 				})
-			print("for country",data)
 			return 	JsonResponse(data,safe=False)
 		
 		context_dict = {
@@ -112,6 +190,10 @@ class CityListView(View):
 		return render(request,self.template_name,context_dict)
 
 class CityEditView(View):
+	"""
+		View that allows us to perform the CRUD operation
+		on City/State.
+	"""
 
 	form_class = CityOrStateForm
 
@@ -129,13 +211,12 @@ class CityEditView(View):
 	def post(self,request):
 
 		if request.POST.get('method') == 'DELETE':
+
 			CityOrState.objects.get(id=request.POST['id']).delete()
 			data = {"status":"True"}
 			return JsonResponse(data,safe=False)
 		
 		country = Country.objects.get(id=request.POST['country'])
-		
-		# pdb.set_trace()
 		try:
 			city = CityOrState.objects.get(id=request.POST['city-id'])
 			form = self.form_class(request.POST, instance=city)
@@ -151,16 +232,18 @@ class CityEditView(View):
 				data = {"status":"True",'message':"City Added Sucessfully"}
 				return JsonResponse(data,safe=False)
 			except Exception as e:
-				print(e)
 				data = {"status":"False","errors":e.message_dict}
 				return JsonResponse(data,safe=False)
 
 		else:
-			
 			data = {"status":"False","error":form.errors.as_json()}
 			return JsonResponse(data,safe=False)
 
 class PopulationList(View):
+	"""
+	View that returns the list of population according to the countries
+	and cities
+	"""
 
 	template_name = 'population.html'
 
@@ -178,12 +261,15 @@ class PopulationList(View):
 					'female':population.no_of_female,
 					'age_group':population.get_group_display()
 				})
-			print(data)
 			return JsonResponse(data,safe=False)
-
+		
 		return render(request,self.template_name)
 
 class PopulationEdit(View):
+	"""
+		View that allows us to perform the CRUD operation
+		on Population.
+	"""
 
 	form_class = PopulationSearchForm
 
@@ -199,7 +285,6 @@ class PopulationEdit(View):
 				'no_of_male':population.no_of_male,
 				'no_of_female':population.no_of_female
 			}
-			print(context_dict)
 			return JsonResponse(context_dict,safe=False)
 
 
@@ -212,52 +297,47 @@ class PopulationEdit(View):
 
 		country = Country.objects.get(id=request.POST['country'])
 		city = CityOrState.objects.get(id=request.POST['city_or_state'])
-		print(city)
-		print('data are',request.POST)
+
 		try:
 			population = PopulationSearch.objects.get(id=request.POST['id'])
 			form = self.form_class(request.POST,instance=population)
-			print(" I am editing")
+
 		except:
 			form = self.form_class(request.POST)
-			print(" I am here")
+
 		if form.is_valid():
 			try:
 				data = form.save(commit=False)
 				data.country = country
 				data.city_or_state=city
 				data.save()
+				
+				pusher.trigger('my-channel', 'my-event', {'message': population_max()})
 				data = {"status":"True",'message':"Population Added Sucessfully"}
 				return JsonResponse(data,safe=False)
 			except Exception as e:
-				print(e)
+
 				data = {"status":"False","errors":e.message_dict}
 				return JsonResponse(data,safe=False)
 		else:
-			print("form was not valid")
+	
 			data = {"status":"False","error":form.errors.as_json()}
 			return JsonResponse(data,safe=False)
 
-def max_three_population(request):
-	if request.method == "GET":
-		total = list(PopulationSearch.objects.values(
-				'country__name').\
-				order_by('-total').\
-				annotate(
-					total=Sum(F('no_of_male')+F('no_of_female'))
-				)[:3]
-			)
-	
-		return JsonResponse(total, safe=False)
 
 def all_countries_population(request):
+	"""
+	Function that returns the total population
+	by group according to the selected Country,
+	State and Gender
+	"""
 
 	if request.method == "GET":
 
 		country = request.GET.get('country','All')
 		state = request.GET.get('state','All')
 		gender = request.GET.get('gender','All')
-		print(gender)
+		
 		filters = {}
 		sum = F('no_of_male')+F('no_of_female')
 		if country !='All':
@@ -268,8 +348,6 @@ def all_countries_population(request):
 			sum = F('no_of_male')
 		if gender == 'female':
 			sum = F('no_of_female')
-		print(filters, sum)
-
 
 		old = PopulationSearch.objects.filter(**filters,group='ol').aggregate(old=Sum(sum))
 		young = PopulationSearch.objects.filter(**filters,group='yo').aggregate(young=Sum(sum))
@@ -278,6 +356,10 @@ def all_countries_population(request):
 		return JsonResponse(data, safe=False)
 
 class PopulationDetails(View):
+	"""
+	View that returns the list of countries on the 
+	home page 
+	"""
 
 	template_name = 'populationdetails.html'
 

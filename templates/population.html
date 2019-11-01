@@ -224,6 +224,9 @@
                 url:"{% url 'city' %}",
                 data:{'list':'list','id':country_name},
                 success:function(result){
+                   $('#cityselect').find('option').not(':first').remove()
+                   $('#cityeditselect').find('option').not(':first').remove()
+
                    if(Object.keys(result).length>0){ 
                     $.each(result, function (i, item) {
                             $('#'+ids_value).append($('<option>', { 
@@ -241,7 +244,7 @@
     $("#populationModal").on('shown.bs.modal',function(){
         country_list('countryselect')
         $("#countryselect").on('change',function(){
-            $('#cityselect').find('option').not(':first').remove()
+            
             city_list(this.value,'cityselect')   
         })
     })
@@ -257,7 +260,7 @@
     $("#populationeditModal").on('shown.bs.modal',function(){
         
         $("#countryeditselect").on('click',function(){
-            $('#cityeditselect').find('option').not(':first').remove()
+            
             city_list(this.value,'cityeditselect')   
         })
 
@@ -438,5 +441,6 @@
 
 
      })
+     
 </script>
 {% endblock layoutscripts%}
