@@ -43,7 +43,6 @@ def population_max():
 	"""
 	total = list(PopulationSearch.objects.values(
 				'country__name').\
-				order_by('-total').\
 				annotate(
 					total=Sum(F('no_of_male')+F('no_of_female'))
 				)[:3]
